@@ -544,5 +544,38 @@ class Fluent extends Object implements TemplateGlobalProvider {
 			)
 		);
 	}
+    
+    /**
+     * 
+     * Populates $owner object's ShowInMenus_<locale> field(s) with a default
+     * value appropriate to userland YML config settings.
+     * 
+     * Able to be used for example in calls to requireDefaultRecords() for new 
+     * objects and in BuildTasks post-install.
+     * 
+     * @param $owner DataObject (Passed by reference)
+     * @return void
+     */
+    public static function show_in_menus_default(&$owner) {
+        $mode = Fluent::config()->show_in_menus_mode;
+        foreach(self::locales() as $locale) {
+            $field = self::db_field_for_locale("ShowInMenus", $locale);
+
+            // Default all locale-specific ShowInMenus_xx fields to 1
+            if($mode === 'fluent') {
+                $default = 1;
+                // Default the default-locale's ShowInMenus_xx field to 1, only if ShowInMenus == 1
+            } else if($mode == 'original' && $locale == self::default_locale()) {
+                $default = $owner->ShowInMenus;
+            } else {
+                $default = 0;
+            }
+
+            // Check our custom ShowInMenus_xx fields are actually present
+            if($owner->$field) {
+                $owner->$field = $default;
+            }
+        }
+    }
 
 }

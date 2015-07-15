@@ -4,6 +4,10 @@ Name: fluentconfig
 Fluent:
   # Don't forget to set i18n->default_locale too!
   default_locale: en_NZ
+  # If FluentMenuExtension is applied, what to do with ShowInMenus field? Possible values are:
+  # 'fluent' All ShowInMenus_xx fields default to a value of 1
+  # 'original' Respects original value of ShowInMenus field and applies it to ShowInMenus_<default_locale>
+  show_in_menus_mode: original
   locales: []
   # Add your locales as necessary
   #  - en_NZ

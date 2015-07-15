@@ -48,27 +48,45 @@ class FluentMenuExtension extends SiteTreeExtension {
 		$field = Fluent::db_field_for_locale("ShowInMenus", $locale);
 		return $this->owner->$field;
 	}
-
+    
 	public static function get_extra_config($class, $extension, $args) {
-
 		// Create a separate boolean field to indicate visibility in each field
 		$db = array();
-		$defaults = array();
 
 		foreach(Fluent::locales() as $locale) {
 			$field = Fluent::db_field_for_locale("ShowInMenus", $locale);
 			// Copy field to translated field
 			$db[$field] = 'Boolean(1)';
-			$defaults[$field] = '1';
 		}
 
 		return array(
 			'db' => $db,
-			'defaults' => $defaults
 		);
 	}
 
-	public function updateSettingsFields(FieldList $fields) {
+    /**
+     * 
+     * Prepares default records for the ShowInMenus_<locale> fields depending on
+     * userland YML config.
+     * 
+     * @return void
+     */
+    public function requireDefaultRecords() {
+        $owner = $this->getOwner();
+        Fluent::show_in_menus_default($owner);
+        
+        $owner->write();
+        if($owner->isPublished()) {
+            $owner->publish('Stage', 'Live');
+        }
+        
+        $msg = $owner->Title . ' Fluent: ShowInMenus changed.';
+        DB::alteration_message($msg, 'changed');
+        
+        parent::requireDefaultRecords();
+    }
+
+    public function updateSettingsFields(FieldList $fields) {
 
 		// Present a set of checkboxes for filtering this item by locale
 		$menuFilterField = FieldGroup::create()
@@ -77,7 +95,7 @@ class FluentMenuExtension extends SiteTreeExtension {
 				_t('Fluent.LocaleMenuFilterDescription', 'Select the locales where this item is visible in the menu')
 			);
 
-		foreach(Fluent::locales() as $locale) {
+        foreach(Fluent::locales() as $locale) {
 			$id = Fluent::db_field_for_locale("ShowInMenus", $locale);
 			$fields->removeByName($id, true); // Remove existing (in case it was auto scaffolded)
 			$title = i18n::get_locale_name($locale);
