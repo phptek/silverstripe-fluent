@@ -16,6 +16,9 @@ class FluentSiteTree extends FluentExtension {
 	public function onBeforeWrite() {
 		// Fix issue with MenuTitle not containing the correct translated value
 		$this->owner->setField('MenuTitle', $this->owner->MenuTitle);
+        
+        // Set default value on each fluent-aware field
+        $this->owner->setTranslatedFieldDefaults();
 
 		parent::onBeforeWrite();
 	}
@@ -86,4 +89,29 @@ class FluentSiteTree extends FluentExtension {
 			$urlsegment->setURLPrefix($baseLink);
 		}
 	}
+    
+    /**
+     * 
+     * Copy value of each non-locale-aware field to locale-aware counterpart field
+     * when the following are true:
+     * 
+     *  1. Writing new records
+     *  2. Not writing a record in the default locale
+     * 
+     * Note: Usually invoked via {@link $this->onBeforeWrite()}.
+     * 
+     * @todo NOT TESTED YET
+     * @return void
+     */
+    protected function setTranslatedFieldDefaults() {
+        $localeAwareFields = Fluent::translated_fields_for(get_class($this));
+        foreach($localeAwareFields as $fluentField) {
+            $origField = preg_replace("#_.+#", '', $fluentField);
+            if($field instanceof DBField) {
+                if(is_null($field->value()) && !is_null($origField->value())) {
+                    $field->setValue($origField->value());
+                }
+            }
+        }
+    }
 }
