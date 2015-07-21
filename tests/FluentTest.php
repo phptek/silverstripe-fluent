@@ -31,7 +31,7 @@ class FluentTest extends SapphireTest {
 
 		// Tweak configuration
 		Config::inst()->remove('Fluent', 'locales');
-		Config::inst()->update('Fluent', 'locales', array('fr_CA', 'en_NZ', 'en_US', 'es_ES'));
+		Config::inst()->update('Fluent', 'locales', array('fr_CA', 'en_NZ', 'en_US', 'es_ES', 'de_DE'));
 		Config::inst()->remove('Fluent', 'default_locale');
 		Config::inst()->update('Fluent', 'default_locale', 'fr_CA');
 		Config::inst()->remove('Fluent', 'aliases');
@@ -813,6 +813,34 @@ class FluentTest extends SapphireTest {
 			$test->assertTrue(Fluent::is_frontend());
 		});
 	}
+    
+    /**
+     * 
+     * Ensure that saving content for the first time only populates the selected and
+     * non-default locale field(s)
+     */
+    public function testSetTranslatedFieldDefaults() {
+        // Adjust module operating mode to non-default
+        Config::inst()->remove('Fluent', 'initial_field_mode'); 
+        Config::inst()->update('Fluent', 'initial_field_mode', 'new');
+        
+		// Test object created in alternate locale, with default value for "Title" field
+		$itemID = Fluent::with_locale('de_DE', function() {
+			$item = new FluentTest_TranslatedObject();
+            $item->Title = 'Ich habe zwei katze';
+			$item->write();
+			return $item->ID;
+		});
+        
+		$item = FluentTest_TranslatedObject::get()->byId($itemID);
+        
+        // Original field should be NULL
+		$this->assertNull($item->Title);
+        // Current locale (fr_FR) should be NULL
+        $this->assertNull($item->Title_fr_FR);
+        // Translated field should be populated
+        $this->assertEquals('Ich habe zwei katze', $this->Title_de_DE);
+    }
 }
 
 /**

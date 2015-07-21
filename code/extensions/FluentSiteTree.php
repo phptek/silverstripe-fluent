@@ -92,25 +92,40 @@ class FluentSiteTree extends FluentExtension {
     
     /**
      * 
-     * Copy value of each non-locale-aware field to locale-aware counterpart field
-     * when the following are true:
+     * Copy the value of each non-locale-aware field to the equivalent locale-aware 
+     * field when the following are true:
      * 
-     *  1. Writing new records
-     *  2. Not writing a record in the default locale
+     *  1. Any given field is currently NULL
+     *  2. This record is not being written in the default_locale
      * 
-     * Note: Usually invoked via {@link $this->onBeforeWrite()}.
+     * Notes: 
+     * - Usually invoked via {@link $this->onBeforeWrite()}.
+     * - This should really be a private method as we don't want any TDH to set this. Needs to be public for tests :-(
      * 
-     * @todo NOT TESTED YET
+     * @todo See TODO below
      * @return void
      */
-    protected function setTranslatedFieldDefaults() {
-        $localeAwareFields = Fluent::translated_fields_for(get_class($this));
-        foreach($localeAwareFields as $fluentField) {
-            $origField = preg_replace("#_.+#", '', $fluentField);
-            if($field instanceof DBField) {
-                if(is_null($field->value()) && !is_null($origField->value())) {
-                    $field->setValue($origField->value());
-                }
+    public function setTranslatedFieldDefaults() {
+        // Userland config can still insist on default behaviour. Also useful for testing
+        $mode = Fluent::config()->initial_field_mode;
+        if(!$mode || $mode === 'default') {
+            var_dump($mode);
+            die('#TEST2');
+            return;
+        }
+                
+        $fluentFields = array_keys(FluentExtension::translated_fields_for(get_class($this)));
+        $isDefault = (Fluent::current_locale() === Fluent::config()->default_locale);
+        
+        foreach($fluentFields as $fieldName) {
+            $fluentField = $this->owner->getField($fieldName);
+            // TODO is there a static method on Fluent.php to get the original, untranslated field name?
+            $origField = $this->owner->getField(preg_replace("#_.+#", '', $fieldName));
+            $fluentFieldIsNull = is_null($fluentField->value());
+            $origFieldIsNull = is_null($origField->value());
+            
+            if($fluentFieldIsNull && !$origFieldIsNull && !$isDefault) {
+                $fluentField->setValue($origField->value());
             }
         }
     }
