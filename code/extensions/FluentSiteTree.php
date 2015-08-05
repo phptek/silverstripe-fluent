@@ -71,6 +71,25 @@ class FluentSiteTree extends FluentExtension {
 
 		return parent::LocaleLink($locale);
 	}
+	
+	/**
+	 * 
+	 * Determines if the current page has any translations.
+	 * 
+	 * "Translation" means
+	 *  - >=1 of a page's translated fields e.g. `Title_ar_EG` is populated, And/Or
+	 *  - >=1 of a page's `has|many_xxx` related classes, itself has >=1 translated + populated field(s), And/Or
+	 *  - >=1 of a page's arbitrary ORM calls to a DataObject sub-class, itself has >=1 translated & populated field(s)
+	 *  - Excludes the default_locale, unless the $includeDefault boolean is set to `true`
+	 * 
+	 * @param boolean	$includeDefault Whether or not to include the `default_locale`
+	 *					in the returned array.
+	 * @return array	Returns an array of the locales that the current page is 
+	 *					translated into.
+	 */
+	public function isTranslatedInto($includeDefault = false) {
+		
+	}
 
 	public function updateCMSFields(FieldList $fields) {
 		parent::updateCMSFields($fields);
