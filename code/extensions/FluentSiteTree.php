@@ -77,18 +77,35 @@ class FluentSiteTree extends FluentExtension {
 	 * Determines if the current page has any translations.
 	 * 
 	 * "Translation" means
-	 *  - >=1 of a page's translated fields e.g. `Title_ar_EG` is populated, And/Or
-	 *  - >=1 of a page's `has|many_xxx` related classes, itself has >=1 translated + populated field(s), And/Or
-	 *  - >=1 of a page's arbitrary ORM calls to a DataObject sub-class, itself has >=1 translated & populated field(s)
-	 *  - Excludes the default_locale, unless the $includeDefault boolean is set to `true`
+	 *  1. >=1 of a page's translated fields e.g. `Title_ar_EG` is populated, And/Or
+	 *  2. >=1 of a page's `has|many_xxx` related classes, itself has >=1 translated + populated field(s), And/Or
+	 *  3. >=1 of a page's arbitrary ORM calls to a DataObject sub-class, itself has >=1 translated & populated field(s)
+	 *  4. Excludes the default_locale, unless the $includeDefault boolean is set to `true`
 	 * 
 	 * @param boolean	$includeDefault Whether or not to include the `default_locale`
 	 *					in the returned array.
 	 * @return array	Returns an array of the locales that the current page is 
 	 *					translated into.
+	 * @todo Might need to split out each individual check-"types" into their own methods
+	 * @todo Write some failing tests
 	 */
 	public function isTranslatedInto($includeDefault = false) {
+		// Get translateable fields
+		$class = ClassInfo::baseDataClass($this->owner->class);
+		$fields = self::translated_fields_for($class);
+		$result = array();
+		foreach($fields as $field) {
+			
+		}
 		
+		// 1.
+		// 2.
+		// 3.
+		// 4.
+		$locales = $result;
+		if(!$includeDefault) {
+			// get array index of default_locale and remove it
+		}
 	}
 
 	public function updateCMSFields(FieldList $fields) {
