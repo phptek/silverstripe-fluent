@@ -694,6 +694,51 @@ class FluentExtension extends DataExtension
         }
     }
 
+    /**
+     * Generate an array of all translated fields on each table relevant to the current object.
+     * 
+     * @return array
+     */
+    public function getTranslatedFields()
+    {
+        $fields = array();
+        $tables = $this->getTranslatedTables();
+        var_dump($tables);
+        die;
+        foreach ($tables as $table => $translatedFields) {
+            foreach ($translatedFields as $translatedField) {
+                $fields[$table] = $translatedField;
+            }
+        }
+        
+        return $fields;
+    }
+
+    /**
+     * Generate an array of all translated {@link DBField} objects on each table relevant to the current object.
+     *
+     * @return array
+     */
+    public function getTranslatedDBFields()
+    {
+        $owner = $this->getOwner();
+        $trFields = $this->getTranslatedFields();
+        
+        var_dump($trFields);
+        die;
+        
+        $dbFields = $owner->db();
+        
+        $fields = array();
+        foreach ($dbFields as $dbFieldName => $dbFieldObject) {
+            if (isset($trFields[$dbFieldName])) {
+                $fields[$dbFieldName] = $dbFieldObject;
+            }
+        }
+        
+        return $fields;
+    }
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="CMS Field Augmentation">
@@ -730,6 +775,24 @@ class FluentExtension extends DataExtension
                 }
             }
         }
+    }
+
+    /**
+     * @param FieldList $fields
+     */
+    public function updateSettingsFields(FieldList $fields)
+    {
+        $untranslateLocaleCheckboxField = CheckboxSetField::create('UntranslatedLocales', 'Untranslate');
+        $untranslateLocaleCheckboxField->setSource($this->Locales()->map('Locale', 'Title'));
+        $fields->addFieldToTab('Root.Settings', $untranslateLocaleCheckboxField);
+    }
+
+    /**
+     * @param FieldList $fields
+     */
+    public function updateCMSActions(FieldList $fields)
+    {
+        $fields->unshift(FormAction::create('untranslate', 'Clear translation for selected locales'));
     }
 
     // </editor-fold>
