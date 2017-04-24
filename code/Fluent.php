@@ -540,9 +540,12 @@ class Fluent extends Object implements TemplateGlobalProvider
         }
 
         // Get date/time formats from Zend
-        require_once 'Zend/Date.php';
-        i18n::config()->date_format = Zend_Locale_Format::getDateFormat($locale);
-        i18n::config()->time_format = Zend_Locale_Format::getTimeFormat($locale);
+        if (self::config()->get('use_datetime')) {
+            require_once 'Zend/Date.php';
+            
+            i18n::config()->date_format = Zend_Locale_Format::getDateFormat($locale);
+            i18n::config()->time_format = Zend_Locale_Format::getTimeFormat($locale);
+        }
     }
 
     /**

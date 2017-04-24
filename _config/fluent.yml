@@ -65,6 +65,8 @@ Fluent:
   #      - en_NZ
   # Turn this on to enable admin filtering
   filter_admin: false
+  # Turn off to prevent Zend_Locale from checking locale XML files for non-existent locales
+  use_datetime: true
 ---
 Name: fluenti18nconfig
 ---
